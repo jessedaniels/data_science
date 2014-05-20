@@ -2,8 +2,8 @@
 import numpy as np
 import math
 
-hidden_hodes = 5
-output_nodes = 1
+hidden_nodes = 25
+output_nodes = 10
 lam = 0.001 # regulation parameter
 alpha = 0.01 # learning rate
 W1 = None
@@ -13,20 +13,24 @@ def initialize(x):
     global hidden_nodes, output_nodes, W1, W2
     data_dim = x.shape[1]
 
-    W1 = np.random.rand(hidden_nodes, data_dim + 1)/20.0
-    W2 = np.random.rand(output_nodes, hidden_nodes + 1)/20.0
+    W1 = np.random.rand(hidden_nodes, data_dim + 1)/40.0
+    W2 = np.random.rand(output_nodes, hidden_nodes + 1)/40.0
 
 def sigmoid(x):
     return 1/(1+np.exp(-x))
 
 def do_pass(x, y):
     global W1, W2 
-
+    
+    # Add ones column to x for bias
+    x = np.hstack([np.ones((x.shape[0], 1)), x])
     # Forward pass
-    z2 = W1.dot(np.hstack([np.ones((x.shape[0], 1)), x]).T)  
+    z2 = W1.dot(x.T)  
     a2 = sigmoid(z2)
-         
-    z3 = W2.dot(np.vstack([np.ones((1, a2.shape[1])), a2]))
+    
+    # Add ones column to a2 for bias
+    a2 = np.vstack([np.ones((1, a2.shape[1])), a2])
+    z3 = W2.dot(a2)
     a3 = sigmoid(z3)
 
     # Backpropagate errors
