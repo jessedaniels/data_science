@@ -63,6 +63,7 @@ def main(x, y):
 
 def gradient_checking(x, y, W1, W2):
     # Note for gradient checking - make sure the regularization derivatives are incorporated into the gradient computed above before comparing.
+    # It might be good to create a version that accepts an unrolled parameter vector to make gradient checking easier. I spot checked it and it looked good. 
     epsilon = 0.0001
     t = np.zeros_like(W1)
     t[4,10] = epsilon
