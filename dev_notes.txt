@@ -1,0 +1,14 @@
+
+
+Neural Network implementation notes.
+
+- Really is important to do the math by hand and compute the derivatives by hand to see what really happens
+- Gradient checking is a good idea even though it is a pain. Had a hard time because the first time through I wasn't
+including the derivatives for the regularization parameters in the computed gradient to compare with the numerical
+estimate. The biases were good but the regular parameters were not. Adding in the reg gradients fixed it - they are spot on.
+- The data dimensions are a good way to make sure your computations are correct. Use a bunch of different architectres and input dimensions
+and make sure the dimensions check out (obviously it won't work otherwise). If the dimensions work its a good start.
+- Numpy with BLAS is damn fast. A single minibatch pass with 100 examples, each using 10,000 dimensions takes less than 50ms.
+
+
+
