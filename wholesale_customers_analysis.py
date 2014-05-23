@@ -7,14 +7,14 @@ from pandas import DataFrame, Series
 from sklearn import preprocessing
 
 dat = pd.read_csv('/home/jdaniels/pydev/src/data_science/wholesale_customers_data.csv')
-scaler = preprocessing.MinMaxScaler()
+scalerx = preprocessing.StandardScaler()
+scalery = preprocessing.StandardScaler()
 
-x = dat[dat.columns[dat.columns != 'Grocery']].values.astype('float')
+#x = dat[dat.columns.drop(['Grocery', 'Channel', 'Region'])].values.astype('float')
+x = dat.Region.values.astype('float')
 y = dat.Grocery.values.astype('float')
 
-scalerX.fit_transform(x)
-scalerY.fit_transform(y)
-
-
+x = scalerx.fit_transform(x)
+y = scalery.fit_transform(y)
 
 

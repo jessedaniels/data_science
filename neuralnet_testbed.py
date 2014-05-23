@@ -2,15 +2,17 @@
 import numpy as np
 import math
 
-hidden_nodes = 5
+hidden_nodes = 15
 output_nodes = 1
-lam = 0.01 # regulation parameter
-alpha = 0.01 # learning rate
+lam = 0.0 # regulation parameter
+alpha = 0.6 # learning rate
 W1 = None
 W2 = None
+grad1 = None
+grad2 = None
 
 def initialize(x):
-    global W1 
+    global W1
     global W2
 
     data_dim = x.shape[1]
@@ -40,11 +42,15 @@ def do_pass(x, y, alpha, lam):
     # Add ones column to a2 for bias
     a2_w_b = np.vstack([np.ones((1, a2.shape[1])), a2])
     z3 = W2.dot(a2_w_b)
-    #a3 = sigmoid(z3)
+    #a3 = sigmoid(z3) # sigmoid output unit
     a3 = z3 # Linear output unit
 
     ### Backpropagate errors ###
-    delta3 = -(y - a3) * a3*(1 - a3)
+    # TODO: Write a separate function for f_prime(z)
+
+    # delta3 = -(y - a3) * a3*(1 - a3) # Sigmoid output unit
+    delta3 = -(y - a3) * 1 # Linear output unit. Since output = a3 = z3, derivative is 1 wrt z3.
+    
     # Derivative wrt activations removes bias from W2 at this point, so have to slice it out
     delta2 = W2[:,1:].T.dot(delta3) * a2*(1 - a2)
 
@@ -81,7 +87,8 @@ def predict(x, W1, W2):
     # Add ones column to a2 for bias
     a2_w_b = np.vstack([np.ones((1, a2.shape[1])), a2])
     z3 = W2.dot(a2_w_b)
-    a3 = sigmoid(z3)
+    #a3 = sigmoid(z3) # sigmoid output unit
+    a3 = z3 # Linear output unit
     
     return a3
 
@@ -91,16 +98,17 @@ def gradient_checking(x, y, W1, W2):
     # It might be good to create a version that accepts an unrolled parameter vector to make gradient checking easier. I spot checked it and it looked good. 
     epsilon = 0.0001
     t = np.zeros_like(W2)
-    t[0,10] = epsilon
+    t[0,1] = epsilon
     grad_estimate = (cost_function(x, y, W1, W2+t) - cost_function(x, y, W1, W2-t)) / (2 * epsilon)     
 
 
 def cost_function(x, y, W1, W2):
     z2 = W1.dot(np.hstack([np.ones((x.shape[0], 1)), x]).T)  
-    a2 = sigmoid(z2)
+    a2 = sigmoid(z2) # Sigmoid hidden unit.
          
     z3 = W2.dot(np.vstack([np.ones((1, a2.shape[1])), a2]))
-    a3 = sigmoid(z3)
+    #a3 = sigmoid(z3) # sigmoid output unit
+    a3 = z3 # Linear output unit
 
     # Combine weight vectors (without biases) into one long vector for easy sum of squares 
     rav = np.hstack((W1[:,1:].ravel(), W2[:,1:].ravel()))
