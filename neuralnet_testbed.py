@@ -4,7 +4,7 @@ import math
 
 hidden_nodes = 15
 output_nodes = 1
-lam = 0.0 # regulation parameter
+lam = 0.001 # regulation parameter
 alpha = 0.6 # learning rate
 W1 = None
 W2 = None
@@ -20,7 +20,7 @@ def initialize(x):
     W1 = np.random.rand(hidden_nodes, data_dim + 1)/20.0
     W2 = np.random.rand(output_nodes, hidden_nodes + 1)/20.0
     
-    return W1, W2
+    #return W1, W2
 
 def sigmoid(x):
     return 1/(1+np.exp(-x))
@@ -31,6 +31,7 @@ def do_pass(x, y, alpha, lam):
     global W2
 
     ### Forward Pass ###
+    # TODO: Shuffle the data?
 
     # Add ones column to x for bias
     # TODO: Inefficient use of memory to keep these kinds of matrices around (with and without bias) - x and a2?
@@ -70,15 +71,15 @@ def do_pass(x, y, alpha, lam):
     # TODO set learning rate based on epoch
 
     cost = np.mean(0.5 * (y - a3) ** 2)
-    print alpha, lam, cost
-    return cost
+    print cost
 
-def main(x, y):
-    pass
+def train(x, y, passes=15, alpha=alpha, lam=lam):
     # Break up x into minibatches
+    print 'Training NN with alpha = %f and l2 regularizer %f' %(alpha, lam)
+    for i in range(1,passes):
+        do_pass(x, y, alpha, lam)
 
-
-def predict(x, W1, W2):
+def predict(x):
     x_w_b = np.hstack([np.ones((x.shape[0], 1)), x])
     
     z2 = W1.dot(x_w_b.T)
