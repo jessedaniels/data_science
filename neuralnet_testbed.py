@@ -2,8 +2,9 @@
 import numpy as np
 import math
 
-hidden_nodes = 15
+hidden_nodes = 7
 output_nodes = 1
+output_type = 'sigmoid'
 lam = 0.001 # regulation parameter
 alpha = 0.6 # learning rate
 W1 = None
@@ -43,15 +44,15 @@ def do_pass(x, y, alpha, lam):
     # Add ones column to a2 for bias
     a2_w_b = np.vstack([np.ones((1, a2.shape[1])), a2])
     z3 = W2.dot(a2_w_b)
-    #a3 = sigmoid(z3) # sigmoid output unit
-    a3 = z3 # Linear output unit
+    a3 = output_function(z3) # sigmoid output unit
 
     ### Backpropagate errors ###
     # TODO: Write a separate function for f_prime(z)
 
     # delta3 = -(y - a3) * a3*(1 - a3) # Sigmoid output unit
-    delta3 = -(y - a3) * 1 # Linear output unit. Since output = a3 = z3, derivative is 1 wrt z3.
-    
+    # delta3 = -(y - a3) * 1 # Linear output unit. Since output = a3 = z3, derivative is 1 wrt z3.
+    delta3 = f_prime(y, a3)
+
     # Derivative wrt activations removes bias from W2 at this point, so have to slice it out
     delta2 = W2[:,1:].T.dot(delta3) * a2*(1 - a2)
 
@@ -74,10 +75,11 @@ def do_pass(x, y, alpha, lam):
     print cost
 
 def train(x, y, passes=15, alpha=alpha, lam=lam):
-    # Break up x into minibatches
-    print 'Training NN with alpha = %f and l2 regularizer %f' %(alpha, lam)
+    # TODO: Break up x into minibatches
+    #print 'Training NN with alpha = %f and l2 regularizer %f' %(alpha, lam)
     for i in range(1,passes):
         do_pass(x, y, alpha, lam)
+    
 
 def predict(x):
     x_w_b = np.hstack([np.ones((x.shape[0], 1)), x])
@@ -88,8 +90,7 @@ def predict(x):
     # Add ones column to a2 for bias
     a2_w_b = np.vstack([np.ones((1, a2.shape[1])), a2])
     z3 = W2.dot(a2_w_b)
-    #a3 = sigmoid(z3) # sigmoid output unit
-    a3 = z3 # Linear output unit
+    a3 = output_function(z3) 
     
     return a3
 
@@ -108,11 +109,17 @@ def cost_function(x, y, W1, W2):
     a2 = sigmoid(z2) # Sigmoid hidden unit.
          
     z3 = W2.dot(np.vstack([np.ones((1, a2.shape[1])), a2]))
-    #a3 = sigmoid(z3) # sigmoid output unit
-    a3 = z3 # Linear output unit
+    a3 = output_function(z3) 
 
     # Combine weight vectors (without biases) into one long vector for easy sum of squares 
     rav = np.hstack((W1[:,1:].ravel(), W2[:,1:].ravel()))
     
     return np.mean(0.5 * (y - a3) ** 2) + 0.5 * lam * rav.dot(rav.T)
-    
+
+def output_function(z):
+    if output_type == 'sigmoid': return sigmoid(z)
+    elif output_type == 'linear': return z
+
+def f_prime(y, a3):
+    if output_type == 'sigmoid': return -(y - a3) * a3*(1 - a3)
+    elif output_type == 'linear': return -(y - a3) # * 1 since output = a3 = z3, derivative is 1 wrt z3.
