@@ -2,8 +2,8 @@
 import numpy as np
 import math
 
-hidden_nodes = 7
-output_nodes = 1
+hidden_nodes = 17
+output_nodes = 3
 output_type = 'sigmoid'
 lam = 0.001 # regulation parameter
 alpha = 0.6 # learning rate
@@ -71,7 +71,7 @@ def do_pass(x, y, alpha, lam):
    
     # TODO set learning rate based on epoch
 
-    cost = np.mean(0.5 * (y - a3) ** 2)
+    cost = np.mean(0.5 * (y.T - a3) ** 2)
     print cost
 
 def train(x, y, passes=15, alpha=alpha, lam=lam):
@@ -100,7 +100,7 @@ def gradient_checking(x, y, W1, W2):
     # It might be good to create a version that accepts an unrolled parameter vector to make gradient checking easier. I spot checked it and it looked good. 
     epsilon = 0.0001
     t = np.zeros_like(W2)
-    t[0,1] = epsilon
+    t[1,1] = epsilon
     grad_estimate = (cost_function(x, y, W1, W2+t) - cost_function(x, y, W1, W2-t)) / (2 * epsilon)     
 
 
@@ -114,12 +114,12 @@ def cost_function(x, y, W1, W2):
     # Combine weight vectors (without biases) into one long vector for easy sum of squares 
     rav = np.hstack((W1[:,1:].ravel(), W2[:,1:].ravel()))
     
-    return np.mean(0.5 * (y - a3) ** 2) + 0.5 * lam * rav.dot(rav.T)
+    return np.mean(0.5 * (y.T - a3) ** 2, axis=1) + 0.5 * lam * rav.dot(rav.T)
 
 def output_function(z):
     if output_type == 'sigmoid': return sigmoid(z)
     elif output_type == 'linear': return z
 
 def f_prime(y, a3):
-    if output_type == 'sigmoid': return -(y - a3) * a3*(1 - a3)
-    elif output_type == 'linear': return -(y - a3) # * 1 since output = a3 = z3, derivative is 1 wrt z3.
+    if output_type == 'sigmoid': return -(y.T - a3) * a3*(1 - a3)
+    elif output_type == 'linear': return -(y.T - a3) # * 1 since output = a3 = z3, derivative is 1 wrt z3.
