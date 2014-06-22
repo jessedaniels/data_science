@@ -109,5 +109,6 @@ if __name__ == '__main__':
 # Classification - pick one if the categorical variables. 0 is a binary, 1 is a multi - softmax??
 # Breakout regression and classification examples - avoid all the commenting.
 # One against all
+# Verify using scipy's lbfgs optimizer
 # Abstract the kind of output unit - make it configurable. Linear, Binary Sigmoid, Softmax
 
