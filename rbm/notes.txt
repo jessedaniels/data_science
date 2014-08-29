@@ -1,0 +1,8 @@
+
+Libraries
+- Be sure to use numexpr to make Numpy stuff even faster. https://github.com/pydata/numexpr
+
+Implementation thoughts
+- Seems likt the most logical place to start is the gibbs sampler.
+- Start with a data vector, sample the hidden units. Make sure to follow the advice in http://www.cs.toronto.edu/~hinton/absps/guideTR.pdf. Such as make sure when sampling the hidden values that you do the thresholding to make them binary. When sampling the visible units from the hidden just assign the probabilities. On the last sample of h from v can use probabilities becuase nothing depends on the state of the hidden units - only the probs.
+- Can use expressions like A > np.random.random((1, 100)) to vectorize figuring out if a hidden unit should be on or off.
