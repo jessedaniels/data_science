@@ -59,6 +59,7 @@ class mini_batch:
 
 def extract_mini_batch(data_set, start_i, n_cases):
     batch = mini_batch()
+    # TODO: implement the below as k_gibbs_sample
     batch.inputs = data_set.inputs[:, start_i : start_i + n_cases]
     batch.targets = data_set.targets[:, start_i : start_i + n_cases]
     return batch
@@ -91,23 +92,38 @@ def configuration_goodness_gradient(visible_state, hidden_state):
     return np.dot(hidden_state, visible_state.transpose()) / float(visible_state.shape[1])
 
 def k_gibbs_sample(rbm_w, vis, k=1):
-    for i in range(1,k):
-        hid = sample_bernoulli(visible_to_hidden(rbm_w, vis, binary=False))
-        vis = sample_bernoulli(hidden_to_visible(rbm_w, hid, binary=False))
-    return vis, hid
+    hid_0 = None
+    for i in range(0 ,k):
+        #hid = sample_bernoulli(visible_to_hidden(rbm_w, vis, binary=False))
+        #vis = sample_bernoulli(hidden_to_visible(rbm_w, hid, binary=False))
+        hid = visible_to_hidden(rbm_w, vis, binary=True)
+        vis = hidden_to_visible(rbm_w, hid, binary=False)
+        if i == 0:
+            hid_0 = hid
+    return hid_0, vis
 
-def cd_k(rbm_w, vis, k=1):
+def cd_k(rbm_w, vis_0, k=1):
+    hid_0, vis_k = k_gibbs_sample(rbm_w, vis_0, k=k)
+    hid_k = visible_to_hidden(rbm_w, vis_k, binary=False)
 
-    hid_0 = sample_bernoulli(visible_to_hidden(rbm_w, vis, binary=False))
-    vis_1 = sample_bernoulli(hidden_to_visible(rbm_w, hid_0, binary=False))
-    hid_1 = sample_bernoulli(visible_to_hidden(rbm_w, vis_1, binary=False))
-
-    pos_stats = configuration_goodness_gradient(vis, hid_0)
-    neg_stats = configuration_goodness_gradient(vis_1, hid_1)
+    pos_stats = configuration_goodness_gradient(vis_0, hid_0)
+    neg_stats = configuration_goodness_gradient(vis_k, hid_k)
 
     return pos_stats - neg_stats
 
     
 def describe_matrix(mat):
-    print '%s, %s' %(np.mean(mat), np.sum(mat))
+    print 'Mean: %s, Sum: %s' %(np.mean(mat), np.sum(mat))
+
+def train_rbm():
+    n_mini_batches = data_sets.training.inputs.shape[1] / mini_batch_size
+
+
+#TODO:
+# Finish train_rbm - look at a4_main. ...have it read in mini batches and actually do SGD - learning rates, etc. At the end we should have a trained RBM with weights.
+# Do assignment part 3 - use weights from above to seed a NN.
+# Add in biases
+# Add in regularization to train_rbm - overall gradient will be cd_k and regularization.
+# Add in momentum
+
 
