@@ -62,10 +62,11 @@ class RBM:
                 vk = self.k_gibbs_sample(v1, k=1)
                 hk = self.visible_to_hidden(vk, binary=False) # Get probs
 
-                # Update weights
+                # Update weights - this step accumulates (sums) across the data in the batch
                 self.wu_vh = self.wu_vh * self.momentum + np.dot(v1.T, h1) - np.dot(vk.T, hk)
                 self.wu_v = self.wu_v * self.momentum + v1.sum(0) - vk.sum(0)
                 self.wu_h = self.wu_h * self.momentum + h1.sum(0) - hk.sum(0)
+
                 # The weight updates are averaged across the data in the batch
                 self.w_vh += self.wu_vh * (self.epsilon/self.batch_size) - self.lam * self.w_vh
                 self.w_v += self.wu_v * (self.epsilon/self.batch_size)

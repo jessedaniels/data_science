@@ -3,8 +3,8 @@ import numpy as np
 from numpy.random import multinomial
 
 n_topics = 2
-#alpha = 50.0 / n_topics
-#beta = 0.01
+alpha = 50.0 / n_topics
+beta = 1.
 
 documents = ["Human machine interface for lab abc computer applications", "A survey of user opinion of computer system response time", "The EPS user interface management system", "System and human system engineering testing of EPS", "Relation of user perceived response time to error measurement", "The generation of random binary unordered trees", "The intersection graph of paths in trees", "Graph minors IV Widths of trees and well quasi ordering", "Graph minors A survey"]
 
@@ -49,7 +49,7 @@ C_wt = multinomial(1, [1./n_topics]*n_topics, size=n_words)
 
 #print C_wt
 
-for gibbs_sample_iterations in range(800):
+for gibbs_sample_iterations in range(300):
     for r in range(C_wt.shape[0]):
         C_wt = sample_topic_given_word(r, C_wt, dtm)
 
@@ -71,3 +71,5 @@ for t in range(n_topics):
     for i in np.argsort(-word_topic_probs, axis=0)[:,t][:5]:
         print word_topic_probs[i,t], dictionary.values()[i]
 
+
+# TODO: Gibbs sampler burn in? How should the above change?

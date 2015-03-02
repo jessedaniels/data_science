@@ -150,8 +150,7 @@ if __name__ == '__main__':
 
 
 #TODO:
-# Finish train_rbm - look at a4_main. ...have it read in mini batches and actually do SGD - learning rates, etc. At the end we should have a trained RBM with weights.
+# Finish train_rbm - look at a4_main. ...have it read in mini batches.
 # Do assignment part 3 - use weights from above to seed a NN.
-# Add in momentum
 
 
