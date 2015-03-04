@@ -3,21 +3,22 @@ import numpy as np
 from numpy.random import multinomial
 
 n_topics = 2
-alpha = 50.0 / n_topics
-beta = 1.
+alpha = 10.0 / n_topics
+beta = 2.
 
-documents = ["Human machine interface for lab abc computer applications", "A survey of user opinion of computer system response time", "The EPS user interface management system", "System and human system engineering testing of EPS", "Relation of user perceived response time to error measurement", "The generation of random binary unordered trees", "The intersection graph of paths in trees", "Graph minors IV Widths of trees and well quasi ordering", "Graph minors A survey"]
+#documents = ["Human machine interface for lab abc computer applications", "A survey of user opinion of computer system response time", "The EPS user interface management system", "System and human system engineering testing of EPS", "Relation of user perceived response time to error measurement", "The generation of random binary unordered trees", "The intersection graph of paths in trees", "Graph minors IV Widths of trees and well quasi ordering", "Graph minors A survey", "graph calculators are cool for human"]
+documents = ["Human machine interface for lab abc computer applications", "A survey of user opinion of computer system response time", "The EPS user interface management system", "System and human system engineering testing of EPS", "Relation of user perceived response time to error measurement", "The baked potato plays great music", "Tony Macalpine plays good music", "Tony plays at the baked potato often", "Can't wait for Tony new album", "Amazon should carry Tony album since it carries music", "The baked potato is a great music venue"]
 
-stoplist = set(['a', 'and', 'for', 'of', 'to', 'in', 'the'])
+stoplist = set(['a', 'and', 'for', 'of', 'to', 'in', 'the', "can't"])
 
 
-def sample_topic_given_word(word, C_wt, dtm):
+def sample_topic_given_word(word, C_wt, dtm, curr_z):
     word_row = np.copy(C_wt[word,])
-    # Decrement word topic matrix by 1 for entries > 0 only (otherwise you get neg values)
-    C_wt[word,] = np.maximum(word_row - 1, 0)
+    # Decrement word topic matrix by 1 for CURRENT TOPIC ASSIGNMENT!
+    # Need to keep track of current topic assignments for each word
+    C_wt[word, curr_z[word]] -= 1
     # Create doc x topic count matrix
-    # Finds the number of times topics show up in documents containing word i (hope this is right)
-    C_dt = dtm[dtm[:,word] > 0,].dot(C_wt)
+    C_dt = dtm.dot(C_wt)
 
     prob_word_given_topic = (C_wt[word,] + beta) / (C_wt.sum(axis=0) + n_words * beta)
     prob_topic_given_doc = (C_dt.sum(axis=0) + alpha) / (C_dt.sum() + n_topics * alpha)
@@ -25,10 +26,10 @@ def sample_topic_given_word(word, C_wt, dtm):
     prob_topic = prob_word_given_topic * prob_topic_given_doc / sum(prob_word_given_topic * prob_topic_given_doc)
 
     # Increment word topic matrix with sample from this distribution
-    C_wt[word,] = word_row + multinomial(1, prob_topic, size=1)
-    
-    return C_wt
-
+    z_sample = multinomial(1, prob_topic, size=1)
+    curr_z[word] = np.argsort(-z_sample)[0][0]
+    # Increment counts
+    C_wt[word,] += word_row + z_sample[0]
 
 
 
@@ -47,11 +48,16 @@ dtm = matutils.corpus2dense(corpus, n_words).T
 # Assign each word to a random topic
 C_wt = multinomial(1, [1./n_topics]*n_topics, size=n_words)
 
+# Compute curent topic assignments vector
+curr_z = np.argsort(-C_wt)[:,0]
+
 #print C_wt
 
-for gibbs_sample_iterations in range(300):
-    for r in range(C_wt.shape[0]):
-        C_wt = sample_topic_given_word(r, C_wt, dtm)
+for gibbs_sample_iterations in range(30):
+    print 'Iteration %s' % gibbs_sample_iterations
+    for word in range(C_wt.shape[0]):
+        print 'Word %s' % word
+        sample_topic_given_word(word, C_wt, dtm, curr_z)
 
 
 print C_wt
@@ -62,7 +68,7 @@ doc_topic_probs = (dtm.dot(C_wt) + alpha) / (np.sum(dtm.dot(C_wt), axis=1)[:,Non
 print 'Document Assignment to Topics:'
 for t in range(n_topics):
     print '\nTopic %s' % t
-    for i in np.argsort(-doc_topic_probs, axis=0)[:,t][:5] :
+    for i in np.argsort(-doc_topic_probs, axis=0)[:,t][:5]:
         print doc_topic_probs[i,t], texts[i]
 
 print '\nWord Assignment to Topics:'
