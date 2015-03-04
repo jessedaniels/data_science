@@ -3,7 +3,7 @@ import numpy as np
 from numpy.random import multinomial
 
 n_topics = 2
-alpha = 50.0 / n_topics
+alpha = 1. / n_topics
 beta = 1.
 
 documents = ["Human machine interface for lab abc computer applications", "A survey of user opinion of computer system response time", "The EPS user interface management system", "System and human system engineering testing of EPS", "Relation of user perceived response time to error measurement", "The generation of random binary unordered trees", "The intersection graph of paths in trees", "Graph minors IV Widths of trees and well quasi ordering", "Graph minors A survey"]
@@ -11,26 +11,25 @@ documents = ["Human machine interface for lab abc computer applications", "A sur
 stoplist = set(['a', 'and', 'for', 'of', 'to', 'in', 'the'])
 
 
-def sample_topic_given_word(word, C_wt, dtm):
-    word_row = np.copy(C_wt[word,])
-    # Decrement word topic matrix by 1 for entries > 0 only (otherwise you get neg values)
-    C_wt[word,] = np.maximum(word_row - 1, 0)
+def sample_topic_given_word(w, C_wt, dtm, curr_z):
+    word_row = np.copy(C_wt[w,])
+    # Decrement word topic matrix by 1 for current assignment
+    C_wt[w,] -= curr_z[w,]
     # Create doc x topic count matrix
-    # Finds the number of times topics show up in documents containing word i (hope this is right)
-    C_dt = dtm[dtm[:,word] > 0,].dot(C_wt)
+    # Finds the number of times topics show up in documents 
+    C_dt = dtm.dot(C_wt)
 
-    prob_word_given_topic = (C_wt[word,] + beta) / (C_wt.sum(axis=0) + n_words * beta)
+    prob_word_given_topic = (C_wt[w,] + beta) / (C_wt.sum(axis=0) + n_words * beta)
     prob_topic_given_doc = (C_dt.sum(axis=0) + alpha) / (C_dt.sum() + n_topics * alpha)
     
     prob_topic = prob_word_given_topic * prob_topic_given_doc / sum(prob_word_given_topic * prob_topic_given_doc)
 
     # Increment word topic matrix with sample from this distribution
-    C_wt[word,] = word_row + multinomial(1, prob_topic, size=1)
+    z_sample = multinomial(1, prob_topic, size=1)
+    curr_z[w,] = z_sample
+
+    C_wt[w,] = word_row + z_sample
     
-    return C_wt
-
-
-
 
 # List containing a list for each document containing document's cleaned words. Could do more: extremes filtering, etc.
 texts = [[word for word in document.lower().split() if word not in stoplist] for document in documents]
@@ -46,12 +45,14 @@ dtm = matutils.corpus2dense(corpus, n_words).T
 
 # Assign each word to a random topic
 C_wt = multinomial(1, [1./n_topics]*n_topics, size=n_words)
+# Current assignments
+curr_z = np.copy(C_wt)
 
 #print C_wt
 
 for gibbs_sample_iterations in range(300):
-    for r in range(C_wt.shape[0]):
-        C_wt = sample_topic_given_word(r, C_wt, dtm)
+    for w in range(C_wt.shape[0]):
+        sample_topic_given_word(w, C_wt, dtm, curr_z)
 
 
 print C_wt
