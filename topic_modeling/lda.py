@@ -4,10 +4,10 @@ from numpy.random import multinomial
 
 n_topics = 2
 
-alpha = 50. / n_topics
-beta = 3.
+alpha = 0.1 / n_topics
+beta = 1.
 
-#documents = ["Human machine interface for lab abc computer applications", "A survey of user opinion of computer system response time", "The EPS user interface management system", "System and human system engineering testing of EPS", "Relation of user perceived response time to error measurement", "The generation of random binary unordered trees", "The intersection graph of paths in trees", "Graph minors IV Widths of trees and well quasi ordering", "Graph minors A survey", "graph calculators are cool for human"]
+#documents = ["Human machine interface for lab abc computer applications", "A survey of user opinion of computer system response time", "The EPS user interface management system", "System and human system engineering testing of EPS", "Relation of user perceived response time to error measurement", "The generation of random binary unordered trees", "The intersection graph of paths in trees", "Graph minors IV Widths of trees and well quasi ordering", "Graph minors A survey"]
 
 #documents = ["Human machine interface for lab abc computer applications", "A survey of user opinion of computer system response time", "The EPS user interface management system", "System and human system engineering testing of EPS", "Relation of user perceived response time to error measurement", "The baked potato plays great music", "Tony Macalpine plays good music", "Tony plays at the baked potato often", "Can't wait for Tony new album", "Amazon should carry Tony album since it carries music", "The baked potato is a great music venue", "human machine", "tony baked", "system human"]
 
@@ -36,6 +36,7 @@ def sample_topic_given_word(i, t, d, C_wt, dtm):
     # Update corpus with new current z assignment for word id w
     corpus[d][i] = (w, z_sample)
 
+    #C_wt[w, z] += 1
     C_wt[w, z_sample] += 1
 
 #np.random.shuffle(documents)
@@ -66,7 +67,7 @@ for doc in corpus:
         # Increment count in C_wt for each time word is assigned to a topic
         C_wt[doc[i][0], doc[i][1]] += 1.
 
-for gibbs_sample_iterations in range(64):
+for gibbs_sample_iterations in range(100):
     # (doc_index, document)
     for d, doc in enumerate(corpus):
         # (word_index, (word_id, current_assignment)
